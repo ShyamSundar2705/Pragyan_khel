@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="neon_green">#FF00E676</color>
+    <color name="light_blue">#FF64B5F6</color>
+    <color name="surface">#FF121212</color>
+    <color name="hud_bg">#CC000000</color>
+    <color name="tracking_lost">#FFFF6B35</color>
+</resources>

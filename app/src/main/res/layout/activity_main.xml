@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".ui.MainActivity">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LAYER 1 — Camera preview (visible in CAMERA mode only)
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Full-screen Camera Preview -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        app:implementationMode="performance"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--
+        Blurred composite overlay — shown instead of the raw PreviewView when a
+        subject is selected. Displays the Stack-Blur + ML Kit per-pixel blend result.
+        Sits above PreviewView but below the detection bounding-box overlay.
+    -->
+    <ImageView
+        android:id="@+id/iv_blurred_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Detection Bounding Box Overlay -->
+    <com.smartfocus.ai.ui.DetectionOverlayView
+        android:id="@+id/overlay_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LAYER 2 — Upload mode panel (visible in UPLOAD mode only)
+         Covers the full screen, hidden in camera mode.
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <FrameLayout
+        android:id="@+id/upload_panel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#000000"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Uploaded image display -->
+        <ImageView
+            android:id="@+id/iv_uploaded_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:contentDescription="Uploaded image" />
+
+        <!-- Loading spinner (shown while image decodes on IO thread) -->
+        <ProgressBar
+            android:id="@+id/upload_progress"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:visibility="gone"
+            android:indeterminateTint="#FF00E676" />
+
+        <!-- Empty state hint (no image chosen yet) -->
+        <TextView
+            android:id="@+id/tv_upload_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Tap 📂 to pick an image"
+            android:textColor="#88FFFFFF"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-light"
+            android:visibility="visible" />
+
+        <!-- Processed (blurred) overlay for uploaded image -->
+        <ImageView
+            android:id="@+id/iv_upload_blurred_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            android:contentDescription="Blurred overlay" />
+
+        <!-- Upload-mode detection overlay (tap-to-select boxes) -->
+        <com.smartfocus.ai.ui.DetectionOverlayView
+            android:id="@+id/upload_overlay_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true" />
+
+        <!-- ─── Video mode views ─────────────────────────────────────── -->
+
+        <!-- Video playback view — shows processed output video -->
+        <VideoView
+            android:id="@+id/video_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <!-- Video processing overlay: progress bar + status text -->
+        <LinearLayout
+            android:id="@+id/video_processing_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/video_progress_bar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#FF00E676"
+                android:progressBackgroundTint="#33FFFFFF" />
+
+            <TextView
+                android:id="@+id/tv_video_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Processing video..."
+                android:textColor="#CCFFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="monospace" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LAYER 3 — HUD: always on top of both camera and upload panels
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Top HUD bar (FPS / AI status / inference time) -->
+    <LinearLayout
+        android:id="@+id/top_hud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="16dp"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_hud_pill"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- FPS Counter (hidden in upload mode) -->
+        <TextView
+            android:id="@+id/tv_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FPS: --"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:paddingStart="4dp"
+            android:paddingEnd="8dp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="16dp"
+            android:background="#55FFFFFF"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- AI Status -->
+        <TextView
+            android:id="@+id/tv_ai_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔍 Scanning"
+            android:textColor="#FF00E676"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="8dp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="16dp"
+            android:background="#55FFFFFF"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Inference time -->
+        <TextView
+            android:id="@+id/tv_inference_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--ms"
+            android:textColor="#FFBBBBBB"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="4dp" />
+
+    </LinearLayout>
+
+    <!-- GPU Status pill (top-right) -->
+    <TextView
+        android:id="@+id/tv_gpu_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_hud_pill"
+        android:padding="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:text="GPU ⚡"
+        android:textColor="#FF00E676"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- App Title Banner (centered top) -->
+    <TextView
+        android:id="@+id/tv_app_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:text="SmartFocus AI"
+        android:textColor="#CCFFFFFF"
+        android:textSize="15sp"
+        android:letterSpacing="0.15"
+        android:fontFamily="monospace"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Hint text when nothing is selected -->
+    <TextView
+        android:id="@+id/tv_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="120dp"
+        android:text="Tap any object to track it"
+        android:textColor="#88FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-light"
+        android:background="@drawable/bg_hud_pill"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_controls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Bottom control bar -->
+    <LinearLayout
+        android:id="@+id/bottom_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Flash toggle (camera mode only) -->
+        <ImageButton
+            android:id="@+id/btn_flash"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/bg_circle_button"
+            android:src="@drawable/ic_flash"
+            android:tint="#FFFFFFFF"
+            android:contentDescription="Toggle Flash"
+            android:elevation="4dp" />
+
+        <!-- Switch camera (camera mode only) -->
+        <ImageButton
+            android:id="@+id/btn_switch_camera"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/bg_circle_button_primary"
+            android:src="@drawable/ic_flip_camera"
+            android:tint="#FF000000"
+            android:contentDescription="Switch Camera"
+            android:elevation="6dp" />
+
+        <!-- Pick image from gallery (upload mode only) -->
+        <ImageButton
+            android:id="@+id/btn_pick_image"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_circle_button_primary"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:tint="#FF000000"
+            android:contentDescription="Pick image from gallery"
+            android:elevation="6dp"
+            android:visibility="gone" />
+
+        <!-- Pick video from gallery (upload mode only) -->
+        <ImageButton
+            android:id="@+id/btn_pick_video"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_circle_button_primary"
+            android:src="@android:drawable/ic_media_play"
+            android:tint="#FF000000"
+            android:contentDescription="Pick video from gallery"
+            android:elevation="6dp"
+            android:visibility="gone" />
+
+        <!-- Clear selection -->
+        <ImageButton
+            android:id="@+id/btn_clear_selection"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="24dp"
+            android:background="@drawable/bg_circle_button"
+            android:src="@drawable/ic_clear"
+            android:tint="#FF00E676"
+            android:contentDescription="Clear Selection"
+            android:elevation="4dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Mode toggle button (top-right corner, always visible) -->
+    <TextView
+        android:id="@+id/btn_mode_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_hud_pill"
+        android:padding="10dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="📂 Upload"
+        android:textColor="#FFFFFFFF"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_controls"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

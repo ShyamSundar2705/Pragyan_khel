@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SmartFocus AI</string>
+    <string name="hint_tap_object">Tap any object to track it</string>
+    <string name="status_scanning">🔍 Scanning</string>
+    <string name="status_tracking">🎯 Tracking</string>
+    <string name="status_lost">⚠ Lost</string>
+    <string name="label_fps">FPS: </string>
+    <string name="label_gpu">GPU ⚡</string>
+    <string name="label_cpu">CPU</string>
+    <string name="permission_camera_denied">Camera permission is required to use SmartFocus AI</string>
+</resources>

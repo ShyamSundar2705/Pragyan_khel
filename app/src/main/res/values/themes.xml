@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SmartFocusAI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Dark theme -->
+        <item name="colorPrimary">#FF00E676</item>
+        <item name="colorPrimaryVariant">#FF00C853</item>
+        <item name="colorOnPrimary">#FF000000</item>
+        <item name="colorSecondary">#FF64B5F6</item>
+        <item name="colorOnSecondary">#FF000000</item>
+        <item name="android:colorBackground">#FF000000</item>
+        <item name="colorOnBackground">#FFFFFFFF</item>
+        <item name="colorSurface">#FF121212</item>
+        <item name="colorOnSurface">#FFFFFFFF</item>
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:navigationBarColor">#00000000</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+</resources>
